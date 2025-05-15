@@ -1,364 +1,148 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KFCMAK - Современное кафе</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #f9ece6;
-            color: #333;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Шапка */
-        header {
-            position: relative;
-            height: 500px;
-            overflow: hidden;
-        }
-
-        .logo {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            font-size: 48px;
-            font-family: 'Great Vibes', cursive;
-            color: #fff;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
-            z-index: 10;
-            animation: fadeIn 1.5s ease-in;
-        }
-
-        .slider {
-            height: 100%;
-        }
-
-        .slide {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out;
-            filter: brightness(0.8);
-        }
-
-        .slide.active {
-            opacity: 1;
-        }
-
-        /* Общие стили для секций */
-        section {
-            max-width: 1300px;
-            margin: 60px auto;
-            padding: 0 20px;
-        }
-
-        h2 {
-            font-family: 'Cinzel', serif;
-            font-size: 40px;
-            text-align: center;
-            margin-bottom: 40px;
-            color: #4a2c2a;
-        }
-
-        /* История */
-        .history {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-        }
-
-        .history-image img {
-            width: 100%;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .history-text {
-            width: 50%;
-        }
-
-        .history-text p {
-            font-family: 'Lora', serif;
-            font-size: 18px;
-            animation: slideIn 1s ease-in;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-50px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        /* Меню */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-        }
-
-        .menu-item {
-            background: #fff;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .menu-item:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .menu-item img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 10px;
-        }
-
-        .menu-item h3 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 20px;
-            margin: 10px 0;
-            color: #4a2c2a;
-        }
-
-        .menu-item p {
-            font-family: 'Lora', serif;
-            font-size: 16px;
-        }
-
-        /* Цены */
-        .prices-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-        }
-
-        .price-item {
-            background: linear-gradient(135deg, #f5d5c6, #e8b8a3);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            color: #fff;
-            transition: transform 0.3s ease;
-        }
-
-        .price-item:hover {
-            transform: scale(1.05);
-        }
-
-        .price-item h3 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 22px;
-            margin-bottom: 10px;
-        }
-
-        .price-item p {
-            font-family: 'Lora', serif;
-            font-size: 18px;
-        }
-
-        /* Сотрудники */
-        .team-grid {
-            display: flex;
-            justify-content: center;
-            gap: 50px;
-        }
-
-        .team-member {
-            text-align: center;
-        }
-
-        .team-member img {
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            animation: zoomIn 1s ease-in;
-        }
-
-        .team-member p {
-            font-family: 'Lora', serif;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-
-        @keyframes zoomIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        /* Подвал */
-        footer {
-            background: #4a2c2a;
-            color: #fff;
-            text-align: center;
-            padding: 30px;
-        }
-
-        footer p {
-            font-family: 'Poppins', sans-serif;
-            font-size: 18px;
-            animation: fadeIn 1s ease-in;
-        }
-
-        .social-buttons {
-            margin-top: 20px;
-        }
-
-        .social-buttons a {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 0 10px;
-            background-color: #fff;
-            color: #4a2c2a;
-            text-decoration: none;
-            border-radius: 5px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 16px;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .social-buttons a:hover {
-            background-color: #e8b8a3;
-            color: #fff;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Медиа-запросы для адаптивности */
-        @media (max-width: 768px) {
-            .history { flex-direction: column; }
-            .history-text { width: 100%; }
-            .team-grid { flex-direction: column; }
-            .social-buttons a { margin: 5px; }
-        }
-    </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const slides = document.querySelectorAll('.slide');
-            let currentSlide = 0;
-
-            function showNextSlide() {
-                slides[currentSlide].classList.remove('active');
-                currentSlide = (currentSlide + 1) % slides.length;
-                slides[currentSlide].classList.add('active');
-            }
-
-            slides[0].classList.add('active');
-            setInterval(showNextSlide, 3000);
-        });
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel&family=Lora&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>3D Maze Game</title>
+  <style>
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+    canvas {
+      display: block;
+      touch-action: none;
+    }
+  </style>
 </head>
 <body>
-    <!-- Шапка -->
-    <header>
-        <div class="logo">KFCMAK</div>
-        <div class="slider">
-            <img src="https://avatars.mds.yandex.net/get-altay/1363707/2a000001635dd2d467cd6bc49da63c706315/XXL_height" class="slide" alt="Современный интерьер">
-            <img src= "https://i.pinimg.com/originals/e6/9b/51/e69b51cc7fc68f469f8c1978b2ca2cac.jpg" alt="Изысканная еда">
-            <img src="https://avatars.mds.yandex.net/get-altay/1660410/2a00000166f7e3d70478159b62fb3d8a8d79/XXL_height" class="slide" alt="Кофе с видом">
-        </div>
-    </header>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
 
-    <!-- История кофе -->
-    <section class="history">
-        <div class="history-image">
-            <img src="https://images.unsplash.com/photo-1514066558159-fc8c737ef259?q=80&w=600" alt="Кофейные зерна">
-        </div>
-        <div class="history-text">
-            <h2>История кофе</h2>
-            <p>Кофе — это искусство, уходящее корнями в древние времена. В KFCMAK мы превращаем каждую чашку в маленькое путешествие, используя отборные зёрна и страсть к своему делу.</p>
-        </div>
-    </section>
+    // Карта
+    const map = [
+      [1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,1],
+      [1,0,1,0,1,0,0,1],
+      [1,0,1,0,1,0,0,1],
+      [1,0,0,0,0,0,0,1],
+      [1,0,1,1,1,1,0,1],
+      [1,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,1],
+    ];
 
-    <!-- Меню -->
-    <section class="menu">
-        <h2>Меню</h2>
-        <div class="menu-grid">
-            <div class="menu-item">
-                <img src="https://ib-ok.ru/wp-content/uploads/2024/11/1000565102-1024x683.jpg" alt="Бургер">
-                <h3>Гурме Бургер</h3>
-                <p>Сочный бургер с мраморной говядиной и трюфельным соусом.</p>
-            </div>
-            <div class="menu-item">
-                <img src="https://images.unsplash.com/photo-1540420828642-fca2c5c18abe?q=80&w=300" alt="Салат">
-                <h3>Салат Цезарь</h3>
-                <p>Свежий салат с хрустящими крутонами и нежной курицей.</p>
-            </div>
-            <div class="menu-item">
-                <img src="https://s.yimg.com/ny/api/res/1.2/i5vHEPQZtF3eAVawd1jmUA--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD02NzU-/https://media.zenfs.com/en/the_daily_meal_185/597f19733c88fcbd64ce22736362615b" alt="Торт">
-                <h3>Шоколадный Лав</h3>
-                <p>Тёплый десерт с жидким шоколадным центром.</p>
-            </div>
-            <div class="menu-item">
-                <img src= "https://imageproxy.wolt.com/menu/menu-images/62c2ae82390a7d19308b5661/5eed6df0-09e9-11ed-b327-4a63fc038f68_screenshot_20220722_210846_gallery.jpeg" alt="Латте"><h3>Ванильный Латте</h3>
-                <p>Нежный кофе с ванильным сиропом и молочной пеной.</p>
-            </div>
-        </div>
-    </section>
+    let px = 3.5, py = 3.5, pa = 0; // position and angle
 
-    <!-- Цены -->
-    <section class="prices">
-        <h2>Цены</h2>
-        <div class="prices-grid">
-            <div class="price-item">
-                <h3>Гурме Бургер</h3>
-                <p>5000 тенге</p>
-            </div>
-            <div class="price-item">
-                <h3>Салат Цезарь</h3>
-                <p>1500 тенге</p>
-            </div>
-            <div class="price-item">
-                <h3>Шоколадный Лав</h3>
-                <p>2500 тенге</p>
-            </div>
-            <div class="price-item">
-                <h3>Ванильный Латте</h3>
-                <p>1000 тенге</p>
-            </div>
-        </div>
-    </section>
+    const keys = {};
+    document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+    document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-    <!-- Сотрудники -->
-    <section class="team">
-        <h2>Наша команда</h2>
-        <div class="team-grid">
-            <div class="team-member">
-                <img src="https://thumbs.dreamstime.com/b/young-barista-man-smiling-offering-cup-coffeer-75430619.jpg" alt="Алексей">
-                <p>Алексей — бариста с 7-летним стажем.</p>
-            </div>
-            <div class="team-member">
-                <img src="https://i.pinimg.com/originals/88/bb/ca/88bbcae8cce5ebe6365ea7eb8fedfd1f.jpg" alt="Мария">
-                <p>Мария — шеф-кондитер с душой художника.</p>
-            </div>
-        </div>
-    </section>
+    // Touch управление
+    let touchStartX = 0;
+    let touchStartY = 0;
 
-    <!-- Подвал -->
-    <footer>
-        <p>Свяжитесь с нами: +7 (999) 123-45-67</p>
-        <div class="social-buttons">
-            <a href="https://wa.me/79991234567" target="_blank">Бронировать через WhatsApp</a>
-            <a href="https://www.instagram.com/kfcmak" target="_blank">Бронировать через Instagram</a>
-        </div>
-    </footer>
+    canvas.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+      const t = e.touches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+
+      // Горизонтальный свайп — поворот
+      if (Math.abs(dx) > Math.abs(dy)) {
+        pa += dx * 0.005;
+      } else {
+        // Вертикальный свайп — движение вперёд/назад
+        const speed = 0.05 * (dy < 0 ? 1 : -1);
+        const nx = px + Math.cos(pa) * speed;
+        const ny = py + Math.sin(pa) * speed;
+        if (map[Math.floor(ny)][Math.floor(nx)] === 0) {
+          px = nx;
+          py = ny;
+        }
+      }
+
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      e.preventDefault();
+    });
+
+    function castRays() {
+      const fov = Math.PI / 3;
+      const rays = width;
+      const step = fov / rays;
+
+      for (let i = 0; i < rays; i++) {
+        const rayAngle = pa - fov / 2 + i * step;
+        let dist = 0;
+        let hit = false;
+
+        while (!hit && dist < 20) {
+          dist += 0.02;
+          const rx = px + Math.cos(rayAngle) * dist;
+          const ry = py + Math.sin(rayAngle) * dist;
+          const mx = Math.floor(rx);
+          const my = Math.floor(ry);
+          if (map[my] && map[my][mx] === 1) {
+            hit = true;
+            const lineHeight = Math.min(height, height / (dist * Math.cos(rayAngle - pa)));
+            const shade = 255 - dist * 20;
+            ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+            ctx.fillRect(i, (height - lineHeight) / 2, 1, lineHeight);
+          }
+        }
+      }
+    }
+
+    function gameLoop() {
+      const speed = 0.05;
+
+      if (keys['w']) {
+        const nx = px + Math.cos(pa) * speed;
+        const ny = py + Math.sin(pa) * speed;
+        if (map[Math.floor(ny)][Math.floor(nx)] === 0) {
+          px = nx;
+          py = ny;
+        }
+      }
+
+      if (keys['s']) {
+        const nx = px - Math.cos(pa) * speed;
+        const ny = py - Math.sin(pa) * speed;
+        if (map[Math.floor(ny)][Math.floor(nx)] === 0) {
+          px = nx;
+          py = ny;
+        }
+      }
+
+      if (keys['a']) pa -= 0.05;
+      if (keys['d']) pa += 0.05;
+
+      ctx.fillStyle = "#003";
+      ctx.fillRect(0, 0, width, height / 2);
+      ctx.fillStyle = "#222";
+      ctx.fillRect(0, height / 2, width, height / 2);
+
+      castRays();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    gameLoop();
+  </script>
 </body>
 </html>
