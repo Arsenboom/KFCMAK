@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>3D Maze Game</title>
+  <title>3D Лабиринт</title>
   <style>
     html, body {
       margin: 0;
@@ -24,7 +24,7 @@
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
 
-    // Карта
+    // Лабиринт
     const map = [
       [1,1,1,1,1,1,1,1],
       [1,0,0,0,0,0,0,1],
@@ -36,15 +36,14 @@
       [1,1,1,1,1,1,1,1],
     ];
 
-    let px = 3.5, py = 3.5, pa = 0; // position and angle
-
+    let px = 3.5, py = 3.5, pa = 0; // позиция и угол игрока
     const keys = {};
+
     document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
     document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-    // Touch управление
-    let touchStartX = 0;
-    let touchStartY = 0;
+    // Сенсорное управление
+    let touchStartX = 0, touchStartY = 0;
 
     canvas.addEventListener("touchstart", (e) => {
       const t = e.touches[0];
@@ -57,11 +56,9 @@
       const dx = t.clientX - touchStartX;
       const dy = t.clientY - touchStartY;
 
-      // Горизонтальный свайп — поворот
       if (Math.abs(dx) > Math.abs(dy)) {
         pa += dx * 0.005;
       } else {
-        // Вертикальный свайп — движение вперёд/назад
         const speed = 0.05 * (dy < 0 ? 1 : -1);
         const nx = px + Math.cos(pa) * speed;
         const ny = py + Math.sin(pa) * speed;
@@ -92,10 +89,10 @@
           const ry = py + Math.sin(rayAngle) * dist;
           const mx = Math.floor(rx);
           const my = Math.floor(ry);
-          if (map[my] && map[my][mx] === 1) {
+          if (map[my]?.[mx] === 1) {
             hit = true;
             const lineHeight = Math.min(height, height / (dist * Math.cos(rayAngle - pa)));
-            const shade = 255 - dist * 20;
+            const shade = Math.max(0, 255 - dist * 25);
             ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
             ctx.fillRect(i, (height - lineHeight) / 2, 1, lineHeight);
           }
@@ -103,7 +100,7 @@
       }
     }
 
-    function gameLoop() {
+    function update() {
       const speed = 0.05;
 
       if (keys['w']) {
@@ -114,7 +111,6 @@
           py = ny;
         }
       }
-
       if (keys['s']) {
         const nx = px - Math.cos(pa) * speed;
         const ny = py - Math.sin(pa) * speed;
@@ -123,9 +119,12 @@
           py = ny;
         }
       }
-
       if (keys['a']) pa -= 0.05;
       if (keys['d']) pa += 0.05;
+    }
+
+    function gameLoop() {
+      update();
 
       ctx.fillStyle = "#003";
       ctx.fillRect(0, 0, width, height / 2);
