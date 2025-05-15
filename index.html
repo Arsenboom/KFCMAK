@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Лабиринт</title>
+    <title>3D Лабиринт с монетками и врагами</title>
     <style>
         body {
             margin: 0;
@@ -31,61 +31,56 @@
             position: absolute;
             bottom: 20px;
             width: 100%;
-            justify-content: center;
-            gap: 20px;
+            justify-content: space-between;
+            pointer-events: none;
         }
         
-        .control-pad {
-            width: 100px;
-            height: 100px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
+        #left-joystick-area {
+            width: 150px;
+            height: 150px;
+            margin-left: 30px;
             position: relative;
+            pointer-events: auto;
         }
         
-        .control-btn {
-            position: absolute;
-            width: 40px;
-            height: 40px;
+        #left-joystick {
+            width: 60px;
+            height: 60px;
             background-color: rgba(255, 255, 255, 0.5);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            user-select: none;
+            position: absolute;
+            left: 45px;
+            top: 45px;
+            touch-action: none;
         }
         
-        #up-btn {
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
+        #right-joystick-area {
+            width: 150px;
+            height: 150px;
+            margin-right: 30px;
+            position: relative;
+            pointer-events: auto;
         }
         
-        #left-btn {
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
+        #right-joystick {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            position: absolute;
+            left: 45px;
+            top: 45px;
+            touch-action: none;
         }
         
-        #right-btn {
-            top: 50%;
-            right: 0;
-            transform: translateY(-50%);
-        }
-        
-        #down-btn {
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        
-        #rotate-left {
-            left: 20px;
-        }
-        
-        #rotate-right {
-            right: 20px;
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 1px 1px 2px black;
+            pointer-events: none;
         }
         
         #start-screen {
@@ -140,6 +135,32 @@
             cursor: pointer;
         }
         
+        #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 10;
+        }
+        
+        #try-again-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
         @media (max-width: 768px) {
             #mobile-controls {
                 display: flex;
@@ -152,21 +173,23 @@
         <canvas id="canvas"></canvas>
         
         <div id="mobile-controls">
-            <div class="control-pad" id="move-pad">
-                <div class="control-btn" id="up-btn">↑</div>
-                <div class="control-btn" id="left-btn">←</div>
-                <div class="control-btn" id="right-btn">→</div>
-                <div class="control-btn" id="down-btn">↓</div>
+            <div id="left-joystick-area">
+                <div id="left-joystick"></div>
             </div>
-            <div class="control-pad" id="rotate-pad">
-                <div class="control-btn" id="rotate-left">↶</div>
-                <div class="control-btn" id="rotate-right">↷</div>
+            <div id="right-joystick-area">
+                <div id="right-joystick"></div>
             </div>
+        </div>
+        
+        <div id="ui">
+            <div>Монетки: <span id="coins-counter">0</span>/<span id="total-coins">0</span></div>
+            <div>Здоровье: <span id="health-counter">100</span>%</div>
         </div>
         
         <div id="start-screen">
             <h1>3D Лабиринт</h1>
-            <p>Найдите выход из лабиринта!</p>
+            <p>Соберите все монетки и найдите выход!</p>
+            <p>Остерегайтесь врагов!</p>
             <p id="controls-info">Управление: WASD или стрелки для движения, Q/E для поворота</p>
             <button id="start-button">Начать игру</button>
         </div>
@@ -174,7 +197,15 @@
         <div id="win-screen">
             <h1>Поздравляем!</h1>
             <p>Вы нашли выход из лабиринта!</p>
+            <p>Собрано монеток: <span id="final-coins">0</span></p>
             <button id="restart-button">Играть снова</button>
+        </div>
+        
+        <div id="game-over-screen">
+            <h1>Игра окончена</h1>
+            <p>Вас поймали враги!</p>
+            <p>Собрано монеток: <span id="game-over-coins">0</span></p>
+            <button id="try-again-button">Попробовать снова</button>
         </div>
     </div>
 
@@ -189,6 +220,13 @@
         const startButton = document.getElementById('start-button');
         const winScreen = document.getElementById('win-screen');
         const restartButton = document.getElementById('restart-button');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const tryAgainButton = document.getElementById('try-again-button');
+        const coinsCounter = document.getElementById('coins-counter');
+        const totalCoinsElement = document.getElementById('total-coins');
+        const healthCounter = document.getElementById('health-counter');
+        const finalCoins = document.getElementById('final-coins');
+        const gameOverCoins = document.getElementById('game-over-coins');
         const controlsInfo = document.getElementById('controls-info');
         
         // Настройка canvas
@@ -201,24 +239,54 @@
             y: 1.5,
             angle: Math.PI / 4,
             speed: 0.05,
-            rotateSpeed: 0.03
+            rotateSpeed: 0.03,
+            health: 100,
+            coins: 0
         };
         
         const map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 2, 0, 0, 2, 0, 0, 0, 1],
             [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
-            [1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 2, 1, 0, 2, 0, 0, 0, 0, 1],
             [1, 0, 1, 0, 1, 1, 1, 1, 0, 1],
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
             [1, 0, 1, 1, 1, 1, 1, 0, 1, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [1, 0, 1, 0, 1, 0, 1, 1, 0, 1],
+            [1, 0, 0, 0, 2, 0, 0, 0, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 1, 3, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ];
         
+        // 0 - проход, 1 - стена, 2 - монетка, 3 - выход
         const mapSize = 10;
-        const exit = { x: 8, y: 8 };
+        let coins = [];
+        let enemies = [];
+        
+        // Инициализация монеток и врагов
+        function initGameObjects() {
+            coins = [];
+            enemies = [];
+            
+            // Находим монетки и выход на карте
+            for (let y = 0; y < mapSize; y++) {
+                for (let x = 0; x < mapSize; x++) {
+                    if (map[y][x] === 2) {
+                        coins.push({ x: x + 0.5, y: y + 0.5, collected: false });
+                    }
+                }
+            }
+            
+            // Создаем врагов
+            enemies = [
+                { x: 3.5, y: 1.5, speed: 0.02, angle: 0, lastTurn: 0 },
+                { x: 6.5, y: 7.5, speed: 0.03, angle: Math.PI, lastTurn: 0 },
+                { x: 1.5, y: 5.5, speed: 0.025, angle: Math.PI/2, lastTurn: 0 }
+            ];
+            
+            player.coins = 0;
+            player.health = 100;
+            updateUI();
+        }
         
         // Управление
         const keys = {
@@ -234,44 +302,103 @@
             e: false
         };
         
+        // Джойстики для мобильного управления
+        let leftJoystickActive = false;
+        let leftJoystickX = 0;
+        let leftJoystickY = 0;
+        let rightJoystickActive = false;
+        let rightJoystickX = 0;
+        
         // Настройка мобильного управления
         if (isMobile) {
-            controlsInfo.textContent = "Используйте сенсорные кнопки для управления";
+            controlsInfo.textContent = "Используйте джойстики для управления";
             
-            const upBtn = document.getElementById('up-btn');
-            const leftBtn = document.getElementById('left-btn');
-            const rightBtn = document.getElementById('right-btn');
-            const downBtn = document.getElementById('down-btn');
-            const rotateLeftBtn = document.getElementById('rotate-left');
-            const rotateRightBtn = document.getElementById('rotate-right');
+            const leftJoystick = document.getElementById('left-joystick');
+            const leftJoystickArea = document.getElementById('left-joystick-area');
+            const rightJoystick = document.getElementById('right-joystick');
+            const rightJoystickArea = document.getElementById('right-joystick-area');
             
-            const handleTouchStart = (key) => (e) => {
+            // Левый джойстик (движение)
+            leftJoystickArea.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                keys[key] = true;
-            };
+                leftJoystickActive = true;
+                updateLeftJoystick(e);
+            });
             
-            const handleTouchEnd = (key) => (e) => {
+            leftJoystickArea.addEventListener('touchmove', (e) => {
                 e.preventDefault();
-                keys[key] = false;
-            };
+                updateLeftJoystick(e);
+            });
             
-            upBtn.addEventListener('touchstart', handleTouchStart('w'));
-            upBtn.addEventListener('touchend', handleTouchEnd('w'));
+            leftJoystickArea.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                leftJoystickActive = false;
+                leftJoystickX = 0;
+                leftJoystickY = 0;
+                leftJoystick.style.transform = 'translate(0, 0)';
+            });
             
-            leftBtn.addEventListener('touchstart', handleTouchStart('a'));
-            leftBtn.addEventListener('touchend', handleTouchEnd('a'));
+            function updateLeftJoystick(e) {
+                const rect = leftJoystickArea.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const touch = e.touches[0];
+                
+                let deltaX = touch.clientX - centerX;
+                let deltaY = touch.clientY - centerY;
+                
+                // Ограничение радиуса джойстика
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const maxDistance = rect.width / 2;
+                
+                if (distance > maxDistance) {
+                    deltaX = deltaX * maxDistance / distance;
+                    deltaY = deltaY * maxDistance / distance;
+                }
+                
+                leftJoystickX = deltaX / maxDistance;
+                leftJoystickY = deltaY / maxDistance;
+                
+                leftJoystick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            }
             
-            rightBtn.addEventListener('touchstart', handleTouchStart('d'));
-            rightBtn.addEventListener('touchend', handleTouchEnd('d'));
+            // Правый джойстик (поворот)
+            rightJoystickArea.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                rightJoystickActive = true;
+                updateRightJoystick(e);
+            });
             
-            downBtn.addEventListener('touchstart', handleTouchStart('s'));
-            downBtn.addEventListener('touchend', handleTouchEnd('s'));
+            rightJoystickArea.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                updateRightJoystick(e);
+            });
             
-            rotateLeftBtn.addEventListener('touchstart', handleTouchStart('q'));
-            rotateLeftBtn.addEventListener('touchend', handleTouchEnd('q'));
+            rightJoystickArea.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                rightJoystickActive = false;
+                rightJoystickX = 0;
+                rightJoystick.style.transform = 'translate(0, 0)';
+            });
             
-            rotateRightBtn.addEventListener('touchstart', handleTouchStart('e'));
-            rotateRightBtn.addEventListener('touchend', handleTouchEnd('e'));
+            function updateRightJoystick(e) {
+                const rect = rightJoystickArea.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const touch = e.touches[0];
+                
+                let deltaX = touch.clientX - centerX;
+                
+                // Ограничение радиуса джойстика
+                const maxDistance = rect.width / 2;
+                
+                if (Math.abs(deltaX) > maxDistance) {
+                    deltaX = deltaX > 0 ? maxDistance : -maxDistance;
+                }
+                
+                rightJoystickX = deltaX / maxDistance;
+                
+                rightJoystick.style.transform = `translate(${deltaX}px, 0)`;
+            }
         }
         
         // Обработчики клавиатуры
@@ -322,6 +449,7 @@
             let hit = false;
             let side;
             let distance;
+            let hitObject = null;
             
             while (!hit) {
                 if (sideDistX < sideDistY) {
@@ -337,18 +465,97 @@
                 if (mapX < 0 || mapX >= mapSize || mapY < 0 || mapY >= mapSize) {
                     hit = true;
                     distance = 100; // Большое значение для "неба"
-                } else if (map[mapY][mapX] > 0) {
-                    hit = true;
-                    
-                    if (side === 0) {
-                        distance = (mapX - player.x + (1 - stepX) / 2) / rayDir.x;
-                    } else {
-                        distance = (mapY - player.y + (1 - stepY) / 2) / rayDir.y;
+                } else {
+                    // Проверка на стену
+                    if (map[mapY][mapX] === 1) {
+                        hit = true;
+                        
+                        if (side === 0) {
+                            distance = (mapX - player.x + (1 - stepX) / 2) / rayDir.x;
+                        } else {
+                            distance = (mapY - player.y + (1 - stepY) / 2) / rayDir.y;
+                        }
+                    }
+                    // Проверка на выход
+                    else if (map[mapY][mapX] === 3) {
+                        hit = true;
+                        hitObject = { type: 'exit' };
+                        
+                        if (side === 0) {
+                            distance = (mapX - player.x + (1 - stepX) / 2) / rayDir.x;
+                        } else {
+                            distance = (mapY - player.y + (1 - stepY) / 2) / rayDir.y;
+                        }
                     }
                 }
             }
             
-            return { distance, side };
+            // Проверка на монетки и врагов
+            let closestCoin = null;
+            let closestCoinDist = Infinity;
+            
+            for (const coin of coins) {
+                if (!coin.collected) {
+                    const coinDist = distanceToPoint(coin.x, coin.y);
+                    if (coinDist < closestCoinDist) {
+                        closestCoinDist = coinDist;
+                        closestCoin = coin;
+                    }
+                }
+            }
+            
+            if (closestCoin && isPointInView(closestCoin.x, closestCoin.y, angle)) {
+                const coinAngle = Math.atan2(closestCoin.y - player.y, closestCoin.x - player.x);
+                const angleDiff = Math.abs(normalizeAngle(angle - coinAngle));
+                
+                if (angleDiff < Math.PI / 6 && closestCoinDist < 3) {
+                    hitObject = { type: 'coin', object: closestCoin, distance: closestCoinDist };
+                    if (closestCoinDist < distance) {
+                        distance = closestCoinDist;
+                    }
+                }
+            }
+            
+            let closestEnemy = null;
+            let closestEnemyDist = Infinity;
+            
+            for (const enemy of enemies) {
+                const enemyDist = distanceToPoint(enemy.x, enemy.y);
+                if (enemyDist < closestEnemyDist) {
+                    closestEnemyDist = enemyDist;
+                    closestEnemy = enemy;
+                }
+            }
+            
+            if (closestEnemy && isPointInView(closestEnemy.x, closestEnemy.y, angle)) {
+                const enemyAngle = Math.atan2(closestEnemy.y - player.y, closestEnemy.x - player.x);
+                const angleDiff = Math.abs(normalizeAngle(angle - enemyAngle));
+                
+                if (angleDiff < Math.PI / 6 && closestEnemyDist < 5) {
+                    hitObject = { type: 'enemy', object: closestEnemy, distance: closestEnemyDist };
+                    if (closestEnemyDist < distance) {
+                        distance = closestEnemyDist;
+                    }
+                }
+            }
+            
+            return { distance, side, hitObject };
+        }
+        
+        function distanceToPoint(x, y) {
+            return Math.sqrt((x - player.x) ** 2 + (y - player.y) ** 2);
+        }
+        
+        function isPointInView(x, y, angle) {
+            const pointAngle = Math.atan2(y - player.y, x - player.x);
+            const angleDiff = Math.abs(normalizeAngle(angle - pointAngle));
+            return angleDiff < Math.PI / 3; // 60 градусов FOV
+        }
+        
+        function normalizeAngle(angle) {
+            while (angle > Math.PI) angle -= 2 * Math.PI;
+            while (angle < -Math.PI) angle += 2 * Math.PI;
+            return angle;
         }
         
         function render() {
@@ -381,7 +588,31 @@
                 // Цвет стены в зависимости от стороны
                 let wallColor;
                 if (ray.distance < 100) {
-                    if (ray.side === 0) {
+                    if (ray.hitObject) {
+                        if (ray.hitObject.type === 'exit') {
+                            wallColor = '#0f0'; // Выход - зеленый
+                        } else if (ray.hitObject.type === 'coin' && ray.hitObject.distance === ray.distance) {
+                            // Рендеринг монетки
+                            const coinSize = (canvas.height / ray.hitObject.distance) * 0.5;
+                            const coinTop = (canvas.height - coinSize) / 2;
+                            ctx.fillStyle = '#FFD700';
+                            ctx.beginPath();
+                            ctx.arc(i, coinTop + coinSize/2, coinSize/2, 0, Math.PI * 2);
+                            ctx.fill();
+                            continue;
+                        } else if (ray.hitObject.type === 'enemy' && ray.hitObject.distance === ray.distance) {
+                            // Рендеринг врага
+                            const enemySize = (canvas.height / ray.hitObject.distance) * 0.8;
+                            const enemyTop = (canvas.height - enemySize) / 2;
+                            ctx.fillStyle = '#f00';
+                            ctx.fillRect(i - 2, enemyTop, 5, enemySize);
+                            continue;
+                        } else if (ray.side === 0) {
+                            wallColor = '#555'; // Север/юг
+                        } else {
+                            wallColor = '#777'; // Восток/запад
+                        }
+                    } else if (ray.side === 0) {
                         wallColor = '#555'; // Север/юг
                     } else {
                         wallColor = '#777'; // Восток/запад
@@ -410,7 +641,7 @@
                 for (let x = 0; x < mapSize; x++) {
                     if (map[y][x] === 1) {
                         ctx.fillStyle = '#fff';
-                    } else if (x === exit.x && y === exit.y) {
+                    } else if (map[y][x] === 3) {
                         ctx.fillStyle = '#0f0';
                     } else {
                         ctx.fillStyle = '#333';
@@ -419,14 +650,32 @@
                 }
             }
             
+            // Рисуем монетки на миникарте
+            for (const coin of coins) {
+                if (!coin.collected) {
+                    ctx.fillStyle = '#FFD700';
+                    ctx.beginPath();
+                    ctx.arc(20 + coin.x * cellSize, 20 + coin.y * cellSize, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Рисуем врагов на миникарте
+            for (const enemy of enemies) {
+                ctx.fillStyle = '#f00';
+                ctx.beginPath();
+                ctx.arc(20 + enemy.x * cellSize, 20 + enemy.y * cellSize, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
             // Игрок на миникарте
-            ctx.fillStyle = '#f00';
+            ctx.fillStyle = '#00f';
             ctx.beginPath();
             ctx.arc(20 + player.x * cellSize, 20 + player.y * cellSize, 3, 0, Math.PI * 2);
             ctx.fill();
             
             // Направление взгляда
-            ctx.strokeStyle = '#f00';
+            ctx.strokeStyle = '#00f';
             ctx.beginPath();
             ctx.moveTo(20 + player.x * cellSize, 20 + player.y * cellSize);
             ctx.lineTo(
@@ -451,76 +700,155 @@
             ).toString(16).slice(1);
         }
         
-        function update() {
-            // Движение вперед/назад
-            if (keys.w || keys.ArrowUp) {
-                const newX = player.x + Math.cos(player.angle) * player.speed;
-                const newY = player.y + Math.sin(player.angle) * player.speed;
+        function updateEnemies() {
+            for (const enemy of enemies) {
+                // Простое ИИ врагов - случайное блуждание
+                if (Math.random() < 0.02 || Date.now() - enemy.lastTurn > 3000) {
+                    enemy.angle = Math.random() * Math.PI * 2;
+                    enemy.lastTurn = Date.now();
+                }
+                
+                const newX = enemy.x + Math.cos(enemy.angle) * enemy.speed;
+                const newY = enemy.y + Math.sin(enemy.angle) * enemy.speed;
                 
                 if (map[Math.floor(newY)][Math.floor(newX)] === 0) {
-                    player.x = newX;
-                    player.y = newY;
+                    enemy.x = newX;
+                    enemy.y = newY;
+                } else {
+                    enemy.angle = Math.random() * Math.PI * 2;
+                }
+                
+                // Проверка столкновения с игроком
+                const distToPlayer = Math.sqrt((enemy.x - player.x) ** 2 + (enemy.y - player.y) ** 2);
+                if (distToPlayer < 0.5) {
+                    player.health -= 1;
+                    updateUI();
+                    
+                    if (player.health <= 0) {
+                        gameOver();
+                    }
                 }
             }
-            
-            if (keys.s || keys.ArrowDown) {
-                const newX = player.x - Math.cos(player.angle) * player.speed;
-                const newY = player.y - Math.sin(player.angle) * player.speed;
-                
-                if (map[Math.floor(newY)][Math.floor(newX)] === 0) {
-                    player.x = newX;
-                    player.y = newY;
+        }
+        
+        function checkCoins() {
+            for (const coin of coins) {
+                if (!coin.collected) {
+                    const dist = Math.sqrt((coin.x - player.x) ** 2 + (coin.y - player.y) ** 2);
+                    if (dist < 0.5) {
+                        coin.collected = true;
+                        player.coins++;
+                        updateUI();
+                    }
                 }
+            }
+        }
+        
+        function checkExit() {
+            const mapX = Math.floor(player.x);
+            const mapY = Math.floor(player.y);
+            
+            if (map[mapY][mapX] === 3) {
+                // Проверяем, собраны ли все монетки
+                const allCoinsCollected = coins.every(coin => coin.collected);
+                if (allCoinsCollected) {
+                    win();
+                }
+            }
+        }
+        
+        function update() {
+            // Движение вперед/назад
+            let moveX = 0;
+            let moveY = 0;
+            
+            if (keys.w || keys.ArrowUp || (leftJoystickActive && leftJoystickY < -0.3)) {
+                moveX += Math.cos(player.angle) * player.speed;
+                moveY += Math.sin(player.angle) * player.speed;
+            }
+            
+            if (keys.s || keys.ArrowDown || (leftJoystickActive && leftJoystickY > 0.3)) {
+                moveX -= Math.cos(player.angle) * player.speed;
+                moveY -= Math.sin(player.angle) * player.speed;
             }
             
             // Движение влево/вправо
-            if (keys.a || keys.ArrowLeft) {
-                const newX = player.x + Math.cos(player.angle - Math.PI/2) * player.speed;
-                const newY = player.y + Math.sin(player.angle - Math.PI/2) * player.speed;
-                
-                if (map[Math.floor(newY)][Math.floor(newX)] === 0) {
-                    player.x = newX;
-                    player.y = newY;
-                }
+            if (keys.a || keys.ArrowLeft || (leftJoystickActive && leftJoystickX < -0.3)) {
+                moveX += Math.cos(player.angle - Math.PI/2) * player.speed;
+                moveY += Math.sin(player.angle - Math.PI/2) * player.speed;
             }
             
-            if (keys.d || keys.ArrowRight) {
-                const newX = player.x + Math.cos(player.angle + Math.PI/2) * player.speed;
-                const newY = player.y + Math.sin(player.angle + Math.PI/2) * player.speed;
-                
-                if (map[Math.floor(newY)][Math.floor(newX)] === 0) {
-                    player.x = newX;
-                    player.y = newY;
-                }
+            if (keys.d || keys.ArrowRight || (leftJoystickActive && leftJoystickX > 0.3)) {
+                moveX += Math.cos(player.angle + Math.PI/2) * player.speed;
+                moveY += Math.sin(player.angle + Math.PI/2) * player.speed;
+            }
+            
+            // Применяем движение
+            const newX = player.x + moveX;
+            const newY = player.y + moveY;
+            
+            if (map[Math.floor(newY)][Math.floor(newX)] === 0 || map[Math.floor(newY)][Math.floor(newX)] === 2 || map[Math.floor(newY)][Math.floor(newX)] === 3) {
+                player.x = newX;
+                player.y = newY;
             }
             
             // Поворот
-            if (keys.q) {
+            if (keys.q || (rightJoystickActive && rightJoystickX < -0.3)) {
                 player.angle -= player.rotateSpeed;
             }
             
-            if (keys.e) {
+            if (keys.e || (rightJoystickActive && rightJoystickX > 0.3)) {
                 player.angle += player.rotateSpeed;
             }
             
-            // Проверка на выход
-            if (Math.floor(player.x) === exit.x && Math.floor(player.y) === exit.y) {
-                winScreen.style.display = 'flex';
-                return;
-            }
+            // Обновление врагов
+            updateEnemies();
+            
+            // Проверка монеток
+            checkCoins();
+            
+            // Проверка выхода
+            checkExit();
             
             render();
             requestAnimationFrame(update);
         }
         
+        function updateUI() {
+            coinsCounter.textContent = player.coins;
+            healthCounter.textContent = player.health;
+        }
+        
+        function win() {
+            winScreen.style.display = 'flex';
+            finalCoins.textContent = player.coins;
+        }
+        
+        function gameOver() {
+            gameOverScreen.style.display = 'flex';
+            gameOverCoins.textContent = player.coins;
+        }
+        
         // Обработчики кнопок
         startButton.addEventListener('click', () => {
             startScreen.style.display = 'none';
+            initGameObjects();
+            totalCoinsElement.textContent = coins.length;
             update();
         });
         
         restartButton.addEventListener('click', () => {
             winScreen.style.display = 'none';
+            initGameObjects();
+            player.x = 1.5;
+            player.y = 1.5;
+            player.angle = Math.PI / 4;
+            update();
+        });
+        
+        tryAgainButton.addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            initGameObjects();
             player.x = 1.5;
             player.y = 1.5;
             player.angle = Math.PI / 4;
@@ -533,7 +861,8 @@
             canvas.height = window.innerHeight;
         });
         
-        // Первоначальный рендеринг
+        // Первоначальная инициализация
+        initGameObjects();
         render();
     </script>
 </body>
