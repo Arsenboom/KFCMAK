@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>3D Maze Game</title>
+  <style>
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+    canvas {
+      display: block;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    // Карта
+    const map = [
+      [1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,1],
+      [1,0,1,0,1,0,0,1],
+      [1,0,1,0,1,0,0,1],
+      [1,0,0,0,0,0,0,1],
+      [1,0,1,1,1,1,0,1],
+      [1,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,1],
+    ];
+
+    let px = 3.5, py = 3.5, pa = 0; // position and angle
+
+    const keys = {};
+    document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+    document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+    // Touch управление
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    canvas.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+      const t = e.touches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+
+      // Горизонтальный свайп — поворот
+      if (Math.abs(dx) > Math.abs(dy)) {
+        pa += dx * 0.005;
+      } else {
+        // Вертикальный свайп — движение вперёд/назад
+        const speed = 0.05 * (dy < 0 ? 1 : -1);
+        const nx = px + Math.cos(pa) * speed;
+        const ny = py + Math.sin(pa) * speed;
+        if (map[Math.floor(ny)][Math.floor(nx)] === 0) {
+          px = nx;
+          py = ny;
+        }
+      }
+
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      e.preventDefault();
+    });
+
+    function castRays() {
+      const fov = Math.PI / 3;
+      const rays = width;
+      const step = fov / rays;
+
+      for (let i = 0; i < rays; i++) {
+        const rayAngle = pa - fov / 2 + i * step;
+        let dist = 0;
+        let hit = false;
+
+        while (!hit && dist < 20) {
+          dist += 0.02;
+          const rx = px + Math.cos(rayAngle) * dist;
+          const ry = py + Math.sin(rayAngle) * dist;
+          const mx = Math.floor(rx);
+          const my = Math.floor(ry);
+          if (map[my] && map[my][mx] === 1) {
+            hit = true;
+            const lineHeight = Math.min(height, height / (dist * Math.cos(rayAngle - pa)));
+            const shade = 255 - dist * 20;
+            ctx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+            ctx.fillRect(i, (height - lineHeight) / 2, 1, lineHeight);
+          }
+        }
+      }
+    }
+
+    function gameLoop() {
+      const speed = 0.05;
+
+      if (keys['w']) {
+        const nx = px + Math.cos(pa) * speed;
+        const ny = py + Math.sin(pa) * speed;
+        if (map[Math.floor(ny)][Math.floor(nx)] === 0) {
+          px = nx;
+          py = ny;
+        }
+      }
+
+      if (keys['s']) {
+        const nx = px - Math.cos(pa) * speed;
+        const ny = py - Math.sin(pa) * speed;
+        if (map[Math.floor(ny)][Math.floor(nx)] === 0) {
+          px = nx;
+          py = ny;
+        }
+      }
+
+      if (keys['a']) pa -= 0.05;
+      if (keys['d']) pa += 0.05;
+
+      ctx.fillStyle = "#003";
+      ctx.fillRect(0, 0, width, height / 2);
+      ctx.fillStyle = "#222";
+      ctx.fillRect(0, height / 2, width, height / 2);
+
+      castRays();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>
